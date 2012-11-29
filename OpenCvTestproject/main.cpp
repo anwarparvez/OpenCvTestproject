@@ -1,18 +1,68 @@
 #include<iostream>
-#include <opencv2/core/core.hpp>
-#include<opencv2/highgui/highgui.hpp>
+#include "cv.h"
+#include "highgui.h"
 #include "EdageFinder.h"
 #include "Morphological.h"
 #include "Voxel.h"
+#include "Ransac.h"
+
 using namespace std;
 using namespace cv;
-#define FILEPATH ""
+#define FILEPATH "Koala.jpg"
 vector<CvPoint*> verticalLineholder;
 vector<CvPoint*> otherLines;
 Voxel *voxelGrid;
 extern IplImage* pImage;
 static bool isVertical = false;
 int* imageMap;
+
+void getEdges(Mat& gray, Mat& grayInt, Mat& grayInt1) {
+	Mat _tmp,_tmp1,gray32f,res;
+
+	gray.convertTo(gray32f,CV_32FC1,1.0/255.0);
+
+	GaussianBlur(gray32f,gray32f,Size(11,11),0.75);
+
+	Sobel(gray32f,_tmp,-1,1,0,3);	//sobel for dx
+	//Sobel(gray32f,_tmp1,-1,1,0,3,-1.0);	//sobel for -dx
+	//_tmp = abs(_tmp) + abs(_tmp1);
+	//_tmp.copyTo(_tmp,(_tmp > 0.0));
+	//_tmp1.copyTo(_tmp1,(_tmp1 > 0.0));
+	_tmp1 = abs(_tmp); // + (_tmp1 == 0.0);
+	_tmp1.copyTo(res,(_tmp1 > 0.2));
+	//res = -res + 1.0;
+
+
+
+	double maxVal,minVal;
+	minMaxLoc(_tmp,&minVal,&maxVal);
+
+	cv::log(/*(_tmp - minVal) / (maxVal - minVal)*/res,_tmp);
+	_tmp = -_tmp * 0.17;
+	//_tmp.convertTo(grayInt1,CV_32SC1);
+	res.convertTo(grayInt1,CV_32FC1); 
+	Sobel(gray32f,_tmp,-1,0,1,3);	//sobel for dy
+	//Sobel(gray32f,_tmp1,-1,0,2,3,-1.0);	//sobel for -dy
+	//_tmp = abs(_tmp) + abs(_tmp1);
+	//_tmp = (_tmp + _tmp1 + 2.0) / 4.0;
+	_tmp1 = abs(_tmp);
+	 res.setTo(Scalar(0));
+	_tmp1.copyTo(res,(_tmp1 > 0.2));
+	//res = -res+1.0;
+	
+	minMaxLoc(_tmp,&minVal,&maxVal);
+	cv::log(/*(_tmp - minVal) / (maxVal - minVal)*/res,_tmp);
+	
+	_tmp = -_tmp * 0.17;
+	//_tmp.convertTo(grayInt,CV_32SC1);
+	res.convertTo(grayInt,CV_32FC1);
+	for(int i =0; i< grayInt.rows; i++){
+		float *temp = grayInt.ptr<float>(i);
+		for(int j =0 ; j <grayInt.cols; j++)
+			temp[j] = fabs(temp[j]);
+	}
+	
+}
  bool sortOut(CvPoint &p1, CvPoint &p2){
 	 return p1.x == p2.x ? p1.y < p2.y : p1.x < p2.x ; 
  }
@@ -150,11 +200,11 @@ int* imageMap;
 	//cvAbs(finalOutSecond,finalOutSecond);
 	//cvShowImage("edgeImages",finalOutSecond);
 	//waitKey(0);
-	cvCreateHistogram(finalOut,histImage);
+	//cvCreateHistogram(finalOut,histImage);
 	
 	
 	cvNormalize(finalOut,finalOutSecond,0.0,255.0,CV_MINMAX);
-	cvCreateHistogram(finalOutSecond,histImage);
+	//cvCreateHistogram(finalOutSecond,histImage);
 	
 	
 	cvReleaseImage(&histImage);
@@ -207,11 +257,13 @@ int* imageMap;
 	int colorVal = 255;
 	isVertical = false;
 	displayLines(finalOut);
+	Ransac ransac;
 	while(trailRunner++ < 3){
 	  //IplImage*  imgForoutput = cvCreateImage(cvGetSize(imgOnwork),imgOnwork->depth,imgOnwork->nChannels);
 	  //cvCopyImage(img,imgForoutput);
 	  printf("Start Ransac\n");
-      indexHolder = initiateVanishing(linez, imageMap); 
+
+      indexHolder = ransac.initiateVanishing(linez, imageMap); 
 	 
 	if(findVerticallines(indexHolder, linez)){
            printf("Found the vertical lines\n");	
@@ -289,6 +341,10 @@ int main()
 	cv::flip(image,result,1); // positive for horizontal
 							  // 0 for vertical,              
 							  // negative for both
+
+
+	findEdgesandCorners();
+
 	cv::namedWindow("Output Image");
 	cv::imshow("Output Image", result);
 

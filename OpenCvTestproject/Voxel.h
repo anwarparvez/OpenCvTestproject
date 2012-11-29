@@ -4,8 +4,8 @@
 #include<vector>
 #include<list>
 #include<stdio.h>
-using namespace std;
 #include "cv.h"
+using namespace std;
 using namespace cv;
 
 typedef struct{

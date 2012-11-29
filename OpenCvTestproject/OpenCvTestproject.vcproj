@@ -178,19 +178,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\histogram.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\histogram.h"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\Morphological.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Ransac.cpp"
 				>
 			</File>
 			<File
@@ -204,23 +200,15 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\colorhistogram.h"
-				>
-			</File>
-			<File
 				RelativePath=".\EdageFinder.h"
 				>
 			</File>
 			<File
-				RelativePath=".\edgedetector.h"
-				>
-			</File>
-			<File
-				RelativePath=".\linefinder.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Morphological.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Ransac.h"
 				>
 			</File>
 			<File
